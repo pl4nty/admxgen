@@ -1,0 +1,29 @@
+@page "/result"
+@using System.Web
+@using Microsoft.AspNetCore.Components
+
+<PageTitle>ADMX Generation Result</PageTitle>
+
+<h3>ADMX Generation Result</h3>
+
+<div>
+    <h3>ADMX File</h3>
+    <pre>@(new MarkupString(HttpUtility.HtmlEncode(admxContent)))</pre>
+    <a href="data:text/xml;charset=utf-8,@Uri.EscapeDataString(admxContent)" download="generated.admx">Download ADMX</a>
+</div>
+
+<div>
+    <h3>ADML File</h3>
+    <pre>@(new MarkupString(HttpUtility.HtmlEncode(admlContent)))</pre>
+    <a href="data:text/xml;charset=utf-8,@Uri.EscapeDataString(admlContent)" download="generated.adml">Download ADML</a>
+</div>
+
+<a href="/">Back to Form</a>
+
+@code {
+    [Parameter]
+    public string admxContent { get; set; }
+
+    [Parameter]
+    public string admlContent { get; set; }
+}

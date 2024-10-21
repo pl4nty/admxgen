@@ -6,7 +6,21 @@ admxgen is a simple tool designed to help in generation of group policy template
 
 ## Usage
 
+### Console Application
+
 `admxgen.exe [input_json_file] [output_filename]`
+
+### Web Application
+
+1. Navigate to the `admxgen-web` directory.
+2. Run the following command to start the web application:
+   ```
+   dotnet run
+   ```
+3. Open a web browser and navigate to `https://localhost:5001`.
+4. Fill out the web form and table with the required input data.
+5. Click the "Generate" button to generate the ADMX and ADML files.
+6. Download the generated files using the provided download links.
 
 ## Sample json settings file:
 

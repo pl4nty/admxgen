@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "ADMX Generation Result";
+}
+
+<h2>ADMX Generation Result</h2>
+
+<div>
+    <h3>ADMX File</h3>
+    <pre>@Html.Raw(ViewBag.AdmxContent)</pre>
+    <a href="data:text/xml;charset=utf-8,@Uri.EscapeDataString(ViewBag.AdmxContent)" download="generated.admx">Download ADMX</a>
+</div>
+
+<div>
+    <h3>ADML File</h3>
+    <pre>@Html.Raw(ViewBag.AdmlContent)</pre>
+    <a href="data:text/xml;charset=utf-8,@Uri.EscapeDataString(ViewBag.AdmlContent)" download="generated.adml">Download ADML</a>
+</div>
+
+<a href="@Url.Action("Index", "Home")">Back to Form</a>

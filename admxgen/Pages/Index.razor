@@ -1,0 +1,114 @@
+@page "/"
+@using System.Collections.Generic
+@using System.Linq
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using admxgen
+
+<PageTitle>ADMX Generator</PageTitle>
+
+<h3>ADMX Generator</h3>
+
+<EditForm Model="@admxSettings" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="displayName">Display Name</label>
+        <InputText id="displayName" class="form-control" @bind-Value="admxSettings.DisplayName" />
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <InputText id="description" class="form-control" @bind-Value="admxSettings.Description" />
+    </div>
+    <div class="form-group">
+        <label for="revision">Revision</label>
+        <InputText id="revision" class="form-control" @bind-Value="admxSettings.Revision" />
+    </div>
+    <div class="form-group">
+        <label for="minRequiredRevision">Min Required Revision</label>
+        <InputText id="minRequiredRevision" class="form-control" @bind-Value="admxSettings.MinRequiredRevision" />
+    </div>
+    <div class="form-group">
+        <label for="schemaVersion">Schema Version</label>
+        <InputText id="schemaVersion" class="form-control" @bind-Value="admxSettings.SchemaVersion" />
+    </div>
+    <div class="form-group">
+        <label for="targetNamespacePrefix">Target Namespace Prefix</label>
+        <InputText id="targetNamespacePrefix" class="form-control" @bind-Value="admxSettings.TargetNamespace.Prefix" />
+    </div>
+    <div class="form-group">
+        <label for="targetNamespace">Target Namespace</label>
+        <InputText id="targetNamespace" class="form-control" @bind-Value="admxSettings.TargetNamespace.Namespace" />
+    </div>
+    <div class="form-group">
+        <label for="fallbackCulture">Fallback Culture</label>
+        <InputText id="fallbackCulture" class="form-control" @bind-Value="admxSettings.FallbackCulture" />
+    </div>
+    <div class="form-group">
+        <label for="supersededPolicyFiles">Superseded Policy Files (comma-separated)</label>
+        <InputText id="supersededPolicyFiles" class="form-control" @bind-Value="admxSettings.SupersededPolicyFiles" />
+    </div>
+    <div class="form-group">
+        <label for="csvData">CSV Data</label>
+        <InputTextArea id="csvData" class="form-control" @bind-Value="csvData" rows="10" />
+    </div>
+    <button type="submit" class="btn btn-primary">Generate</button>
+</EditForm>
+
+@code {
+    private AdmxSettings admxSettings = new AdmxSettings
+    {
+        TargetNamespace = new TargetNamespace(),
+        SupersededPolicyFiles = new List<string>()
+    };
+    private string csvData;
+
+    private async Task HandleValidSubmit()
+    {
+        var parser = new InputParser(new StringReader(csvData));
+        parser.Parse();
+
+        parser.Definitions.revision = admxSettings.Revision;
+        parser.Definitions.schemaVersion = admxSettings.SchemaVersion;
+        parser.Definitions.policyNamespaces.target.prefix = admxSettings.TargetNamespace.Prefix;
+        parser.Definitions.policyNamespaces.target.@namespace = admxSettings.TargetNamespace.Namespace;
+        parser.Definitions.resources.minRequiredRevision = admxSettings.MinRequiredRevision;
+        parser.Definitions.resources.fallbackCulture = admxSettings.FallbackCulture;
+        parser.Definitions.supersededAdm = admxSettings.SupersededPolicyFiles.Select(s => new FileReference { fileName = s }).ToArray();
+
+        parser.Resources.revision = admxSettings.Revision;
+        parser.Resources.schemaVersion = admxSettings.SchemaVersion;
+        parser.Resources.displayName = admxSettings.DisplayName;
+        parser.Resources.description = admxSettings.Description;
+
+        var xmlWriterSettings = new XmlWriterSettings
+        {
+            Indent = true,
+            Encoding = Encoding.UTF8
+        };
+
+        string admxContent;
+        using (var stringWriter = new StringWriter())
+        using (var xmlWriter = XmlWriter.Create(stringWriter, xmlWriterSettings))
+        {
+            var serializer = new XmlSerializer(parser.Definitions.GetType(), "http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions");
+            serializer.Serialize(xmlWriter, parser.Definitions);
+            admxContent = stringWriter.ToString();
+        }
+
+        string admlContent;
+        using (var stringWriter = new StringWriter())
+        using (var xmlWriter = XmlWriter.Create(stringWriter, xmlWriterSettings))
+        {
+            var serializer = new XmlSerializer(parser.Resources.GetType(), "http://www.microsoft.com/GroupPolicy/PolicyDefinitions");
+            serializer.Serialize(xmlWriter, parser.Resources);
+            admlContent = stringWriter.ToString();
+        }
+
+        // Navigate to the result page with the generated content
+        var navigationManager = (NavigationManager)ServiceProvider.GetService(typeof(NavigationManager));
+        navigationManager.NavigateTo($"/result?admxContent={Uri.EscapeDataString(admxContent)}&admlContent={Uri.EscapeDataString(admlContent)}");
+    }
+}
