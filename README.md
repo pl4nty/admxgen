@@ -62,3 +62,22 @@ NOTE: In this format you will notice several columns that represent an Id. These
 | textBox | presents a simple text entry that sets a string value |
 | boolean | presents a drop down list with values Disabled and Enabled that set a DWORD to 0 and 1 respectively |
 | enabledDropDown | [alias for boolean] |
+
+## Web Interface
+
+A web interface has been created for the tool `admxgen`. The web interface allows users to upload JSON and CSV files and generates `.admx` and `.adml` files from the uploaded files.
+
+### Usage
+
+1. Open the `web/index.html` file in a web browser.
+2. Upload the JSON and CSV files using the file input fields.
+3. Click the "Generate" button to generate the `.admx` and `.adml` files.
+4. Download the generated files using the provided download links.
+
+### Files
+
+The web interface consists of the following files:
+
+- `web/index.html`: The entry point for the web interface.
+- `web/app.js`: The main logic for the web interface, built using React.
+- `web/styles.css`: The CSS file to style the web interface.
