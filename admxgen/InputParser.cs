@@ -21,7 +21,7 @@ namespace admxgen
             public PolicyPresentation Presentation;
         }
 
-        private TextReader _reader;
+        private string _input;
         private const int MAX_ID_LENGTH = 96;
         private HashCalculator _hashCalculator = new HashCalculator();
 
@@ -55,9 +55,9 @@ namespace admxgen
             }
         };
 
-        public InputParser(TextReader reader)
+        public InputParser(string input)
         {
-            this._reader = reader;
+            this._input = input;
         }
 
         private void AddUniqueArrayItem<T>(Action<T[]> setCollection, T[] collection, T item)
@@ -138,7 +138,7 @@ namespace admxgen
 
         public void Parse()
         {
-            using (var csvReader = new CsvReader(_reader, true))
+            using (var csvReader = new CsvReader(new StringReader(_input), true))
             {
                 var csvHeaders = csvReader.GetFieldHeaders();
                 while (csvReader.ReadNextRecord())

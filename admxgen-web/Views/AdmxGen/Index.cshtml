@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "ADMX Generator";
+}
+
+<h2>ADMX Generator</h2>
+
+<form asp-action="GenerateAdmx" method="post">
+    <div>
+        <label for="DisplayName">Display Name</label>
+        <input type="text" id="DisplayName" name="DisplayName" />
+    </div>
+    <div>
+        <label for="Description">Description</label>
+        <input type="text" id="Description" name="Description" />
+    </div>
+    <div>
+        <label for="Revision">Revision</label>
+        <input type="text" id="Revision" name="Revision" />
+    </div>
+    <div>
+        <label for="MinRequiredRevision">Min Required Revision</label>
+        <input type="text" id="MinRequiredRevision" name="MinRequiredRevision" />
+    </div>
+    <div>
+        <label for="TargetNamespacePrefix">Target Namespace Prefix</label>
+        <input type="text" id="TargetNamespacePrefix" name="TargetNamespace.Prefix" />
+    </div>
+    <div>
+        <label for="TargetNamespaceNamespace">Target Namespace</label>
+        <input type="text" id="TargetNamespaceNamespace" name="TargetNamespace.Namespace" />
+    </div>
+    <div>
+        <label for="SchemaVersion">Schema Version</label>
+        <input type="text" id="SchemaVersion" name="SchemaVersion" />
+    </div>
+    <div>
+        <label for="FallbackCulture">Fallback Culture</label>
+        <input type="text" id="FallbackCulture" name="FallbackCulture" />
+    </div>
+    <div>
+        <label for="SupersededPolicyFiles">Superseded Policy Files</label>
+        <input type="text" id="SupersededPolicyFiles" name="SupersededPolicyFiles" />
+    </div>
+    <div>
+        <label for="PolicyDefinitions">Policy Definitions</label>
+        <table>
+            <thead>
+                <tr>
+                    <th>CategoryId</th>
+                    <th>Category</th>
+                    <th>Id</th>
+                    <th>Display Name</th>
+                    <th>Class</th>
+                    <th>Type</th>
+                    <th>Explanation</th>
+                    <th>Registry Key</th>
+                    <th>Value Name</th>
+                    <th>SupportedOnId</th>
+                    <th>Supported On</th>
+                    <th>Properties</th>
+                </tr>
+            </thead>
+            <tbody id="policyDefinitionsTable">
+                <tr>
+                    <td><input type="text" name="PolicyDefinitions[0].CategoryId" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Category" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Id" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].DisplayName" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Class" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Type" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Explanation" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].RegistryKey" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].ValueName" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].SupportedOnId" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].SupportedOn" /></td>
+                    <td><input type="text" name="PolicyDefinitions[0].Properties" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="addRow()">Add Row</button>
+    </div>
+    <div>
+        <button type="submit">Generate ADMX</button>
+    </div>
+</form>
+
+<script>
+    function addRow() {
+        var table = document.getElementById("policyDefinitionsTable");
+        var rowCount = table.rows.length;
+        var row = table.insertRow(rowCount);
+        for (var i = 0; i < 12; i++) {
+            var cell = row.insertCell(i);
+            var input = document.createElement("input");
+            input.type = "text";
+            input.name = "PolicyDefinitions[" + rowCount + "]." + table.rows[0].cells[i].innerText.replace(" ", "");
+            cell.appendChild(input);
+        }
+    }
+</script>

@@ -1,36 +1,22 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using admxgen;
 
-namespace admxgen
+namespace admxgen_web.Controllers
 {
-    public class TargetNamespace
+    public class AdmxGenController : Controller
     {
-        public string Prefix { get; set; }
-        public string Namespace { get; set; }
-    }
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View();
+        }
 
-    public class AdmxSettings
-    {
-        public string DisplayName { get; set; }
-        public string Description { get; set; }
-        public string Revision { get; set; }
-        public string MinRequiredRevision { get; set; }
-        public TargetNamespace TargetNamespace { get; set; }
-        public string SchemaVersion { get; set; }
-        public string FallbackCulture { get; set; }
-        public List<string> SupersededPolicyFiles { get; set; }
-        public string File { get; set; }
-    }
-
-    public class Program
-    {
-        public static string GenerateAdmx(AdmxSettings admxSettings, string policyDefinitions)
+        [HttpPost]
+        public IActionResult GenerateAdmx(AdmxSettings admxSettings, string policyDefinitions)
         {
             var parser = new InputParser(policyDefinitions);
             parser.Parse();
@@ -87,7 +73,7 @@ namespace admxgen
             }
 
             zipStream.Seek(0, SeekOrigin.Begin);
-            return Convert.ToBase64String(zipStream.ToArray());
+            return File(zipStream.ToArray(), "application/zip", "output.zip");
         }
     }
 }
