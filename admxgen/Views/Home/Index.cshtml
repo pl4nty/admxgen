@@ -1,0 +1,120 @@
+@model admxgen.Models.AdmxSettings
+
+@{
+    ViewData["Title"] = "ADMX Generator";
+}
+
+<h2>ADMX Generator</h2>
+
+<form asp-action="Generate" method="post">
+    <div class="form-group">
+        <label asp-for="DisplayName" class="control-label"></label>
+        <input asp-for="DisplayName" class="form-control" value="Example Display Name" />
+        <span asp-validation-for="DisplayName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <input asp-for="Description" class="form-control" value="Example Description" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="MinRequiredRevision" class="control-label"></label>
+        <input asp-for="MinRequiredRevision" class="form-control" value="1.0.0" />
+        <span asp-validation-for="MinRequiredRevision" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SchemaVersion" class="control-label"></label>
+        <input asp-for="SchemaVersion" class="form-control" value="1.0" />
+        <span asp-validation-for="SchemaVersion" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="TargetNamespace.Prefix" class="control-label"></label>
+        <input asp-for="TargetNamespace.Prefix" class="form-control" value="examplePrefix" />
+        <span asp-validation-for="TargetNamespace.Prefix" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="TargetNamespace.Namespace" class="control-label"></label>
+        <input asp-for="TargetNamespace.Namespace" class="form-control" value="http://example.com/namespace" />
+        <span asp-validation-for="TargetNamespace.Namespace" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="FallbackCulture" class="control-label"></label>
+        <input asp-for="FallbackCulture" class="form-control" value="en-US" />
+        <span asp-validation-for="FallbackCulture" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="SupersededPolicyFiles" class="control-label"></label>
+        <input asp-for="SupersededPolicyFiles" class="form-control" value="example.adm" />
+        <span asp-validation-for="SupersededPolicyFiles" class="text-danger"></span>
+    </div>
+
+    <h3>Policy Definitions</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>CategoryId</th>
+                <th>Category</th>
+                <th>Id</th>
+                <th>Display Name</th>
+                <th>Class</th>
+                <th>Type</th>
+                <th>Explanation</th>
+                <th>Registry Key</th>
+                <th>Value Name</th>
+                <th>SupportedOnId</th>
+                <th>Supported On</th>
+                <th>Properties</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="policyDefinitionsTable">
+            <tr>
+                <td><input name="policyDefinitions[0].CategoryId" class="form-control" value="ExampleCategoryId" /></td>
+                <td><input name="policyDefinitions[0].Category" class="form-control" value="Example Category" /></td>
+                <td><input name="policyDefinitions[0].Id" class="form-control" value="ExampleId" /></td>
+                <td><input name="policyDefinitions[0].DisplayName" class="form-control" value="Example Display Name" /></td>
+                <td><input name="policyDefinitions[0].Class" class="form-control" value="Machine" /></td>
+                <td><input name="policyDefinitions[0].Type" class="form-control" value="boolean" /></td>
+                <td><input name="policyDefinitions[0].Explanation" class="form-control" value="Example Explanation" /></td>
+                <td><input name="policyDefinitions[0].RegistryKey" class="form-control" value="Software\\Company\\Example" /></td>
+                <td><input name="policyDefinitions[0].ValueName" class="form-control" value="ExampleValueName" /></td>
+                <td><input name="policyDefinitions[0].SupportedOnId" class="form-control" value="v1234" /></td>
+                <td><input name="policyDefinitions[0].SupportedOn" class="form-control" value="Company Product v1234" /></td>
+                <td><input name="policyDefinitions[0].Properties" class="form-control" value="Default=1" /></td>
+                <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-primary" onclick="addRow()">Add Row</button>
+    <button type="submit" class="btn btn-success">Generate</button>
+</form>
+
+@section Scripts {
+    <script>
+        function addRow() {
+            var table = document.getElementById("policyDefinitionsTable");
+            var rowCount = table.rows.length;
+            var row = table.insertRow(rowCount);
+            row.innerHTML = `
+                <td><input name="policyDefinitions[${rowCount}].CategoryId" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Category" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Id" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].DisplayName" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Class" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Type" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Explanation" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].RegistryKey" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].ValueName" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].SupportedOnId" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].SupportedOn" class="form-control" /></td>
+                <td><input name="policyDefinitions[${rowCount}].Properties" class="form-control" /></td>
+                <td><button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button></td>
+            `;
+        }
+
+        function removeRow(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+    </script>
+}

@@ -1,0 +1,5 @@
+{
+  "tasks": {
+    "build": "dotnet run --project admxgen"
+  }
+}
