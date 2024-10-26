@@ -317,12 +317,12 @@ namespace admxgen
                             id = policyId,
                             key = key,
                             valueName = valueName,
-                            minValue = uint.Parse(minValue),
-                            maxValue = uint.Parse(maxValue),
+                            minValue = minValue != null ? uint.Parse(minValue) : 0,
+                            maxValue = maxValue != null ? uint.Parse(maxValue) : 9999,
                             required = true
                         }
                     };
-                    result.Presentation = new PolicyPresentation { id = policyId, Items = new object[] { new DecimalTextBox { refId = policyId, Value = properties["Label"], defaultValue = uint.Parse(defaultValue) } } };
+                    result.Presentation = new PolicyPresentation { id = policyId, Items = new object[] { new DecimalTextBox { refId = policyId, Value = properties["Label"], defaultValue = defaultValue != null ? uint.Parse(defaultValue) : 1 } } };
                     break;
 
                 case "enabled":

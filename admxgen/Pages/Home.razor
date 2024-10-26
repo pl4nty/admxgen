@@ -163,6 +163,13 @@
     </tbody>
 </table>
 
+@if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert alert-danger" role="alert">
+        @Error
+    </div>
+}
+
 <script>
     function downloadFiles(admxUrl, admlUrl, filePrefix) {
         const admxLink = document.createElement('a');
@@ -212,6 +219,7 @@
     };
     private string? AdmxDownloadUrl { get; set; }
     private string? AdmlDownloadUrl { get; set; }
+    private string? Error { get; set; }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -262,6 +270,7 @@
 
     private async void Submit()
     {
+        Error = null;
         var csvBuilder = new StringBuilder();
         csvBuilder.AppendLine("CategoryId,Category,Id,Display Name,Class,Type,Explanation,Registry Key,Value Name,SupportedOnId,Supported On,Properties");
 
@@ -275,6 +284,11 @@
         admxSettings.File = csvBuilder.ToString();
 
         var res = admxgen.Program.GenerateAdmx(admxSettings);
+        if (res.Length != 2)
+        {
+            Error = res[0];
+            return;
+        }
 
         var admxBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[0]));
         var admlBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[1]));
