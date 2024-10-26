@@ -23,7 +23,6 @@ namespace admxgen
 
         private TextReader _reader;
         private const int MAX_ID_LENGTH = 96;
-        private HashCalculator _hashCalculator = new HashCalculator();
 
         public PolicyDefinitions Definitions { get; } = new PolicyDefinitions
         {
