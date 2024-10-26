@@ -1,0 +1,339 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+@using System.Text
+@using System.Text.RegularExpressions
+@using admxgen
+@inject IJSRuntime JSRuntime
+
+@page "/"
+
+<PageTitle>ADMX Generator</PageTitle>
+<h1 class="mb-4" style="color: var(--bs-emphasis-color)">ADMX Generator</h1>
+
+<EditForm Model="@admxSettings" OnValidSubmit="@Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <div class="form-group row">
+        <div class="col-md-2">
+            <InputText @bind-Value="admxSettings.DisplayName" placeholder="Policy Name" required class="form-control" />
+        </div>
+        <div class="col-md-5">
+            <InputText @bind-Value="admxSettings.Description" placeholder="Description" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row mt-4">
+        <div class="col-md-1">
+            <label for="revision" class="form-label">Revision</label>
+            <InputText id="revision" @bind-Value="admxSettings.Revision" placeholder="1.1" required pattern="\d+\.\d+" class="form-control" title="Method of tracking changes made to the .admx or .adml file." />
+        </div>
+        <div class="col-md-1">
+            <label for="minRequiredRevision" class="form-label">Min Revision</label>
+            <InputText id="minRequiredRevision" @bind-Value="admxSettings.MinRequiredRevision" placeholder="1.0" required pattern="\d+\.\d+" class="form-control" title="Minimum version of the .adml file that will interoperate with the .admx file." />
+        </div>
+        <div class="col-md-1">
+            <label for="schemaVersion" class="form-label"><a target="_blank" href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/find-active-directory-schema?tabs=gui#mapping-the-objectversion-attribute">Schema</a></label>
+            <InputText id="schemaVersion" @bind-Value="admxSettings.SchemaVersion" placeholder="8.8" required pattern="\d+\.\d+" class="form-control" title="ADMX schema version that the .admx and .adml files conform to." />
+        </div>
+        <div class="col-md-2">
+            <label for="targetNamespacePrefix" class="form-label">Namespace Prefix</label>
+            <InputText id="targetNamespacePrefix" @bind-Value="admxSettings.TargetNamespace.Prefix" placeholder="NamespacePrefix" required class="form-control" title="Logical name that refers to the namespace within the current or referenced ADMX file." />
+        </div>
+        <div class="col-md-2">
+            <label for="targetNamespace" class="form-label">Namespace</label>
+            <InputText id="targetNamespace" @bind-Value="admxSettings.TargetNamespace.Namespace" placeholder="NamespacePrefix.Policies" required class="form-control" title="URI used to identify the elements within an ADMX file. Must be unique from all other ADMX files." />
+        </div>
+        <div class="col-md-2">
+            <label for="fallbackCulture" class="form-label">Culture</label>
+            <InputText id="fallbackCulture" @bind-Value="admxSettings.FallbackCulture" required pattern="[a-z]{2}-[A-Z]{2}" placeholder="en-US" class="form-control" />
+        </div>
+    </div>
+    <div class="form-group row mt-4">
+        <div class="col-md-4">
+            <label for="supersededPolicyFiles" class="form-label">Superseded Policies</label>
+            <InputText id="supersededPolicyFiles" @bind-Value="admxSettings.SupersededPolicyFiles" placeholder="superseded1.adm,superseded2.adm" class="form-control" title="ADM file name(s) to be replaced by the ADMX file. Group Policy Object Editor will not read any ADM file designated as superseded." />
+        </div>
+    </div>
+    <div class="table-responsive mt-4">
+        <table class="table table-sm table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Category</th>
+                    <th>Display Name</th>
+                    <th>Description</th>
+                    <th>Scope</th>
+                    <th>Type</th>
+                    <th>Registry Key</th>
+                    <th>Value Name</th>
+                    <th>Supported On</th>
+                    <th>Properties</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var resource in resources)
+                {
+                    <tr>
+                        <td>
+                            <InputText @bind-Value="resource.Category" placeholder="Category" required class="form-control w-auto h-auto" />
+                        </td>
+                        <td>
+                            <InputText @bind-Value="resource.DisplayName" placeholder="Check Box Setting" class="form-control w-auto" />
+                        </td>
+                        <td>
+                            <InputTextArea @bind-Value="resource.Explanation" placeholder="Description of check box setting." class="form-control w-auto" />
+                        </td>
+                        <td>
+                            <InputSelect @bind-Value="resource.Class" class="form-select w-auto">
+                                <option value="Machine">Machine</option>
+                                <option value="User">User</option>
+                            </InputSelect>
+                        </td>
+                        <td>
+                            <InputSelect @bind-Value="resource.Type" class="form-control w-auto">
+                                <option value="checkBox">Check box</option>
+                                <option value="decimal">Decimal</option>
+                                <option value="enabled">Enabled</option>
+                                <option value="enum">Enum</option>
+                                <option value="textBox">Text box</option>
+                                <option value="boolean">Boolean</option>
+                            </InputSelect>
+                        </td>
+                        <td>
+                            <InputTextArea @bind-Value="resource.RegistryKey" placeholder="Software\Company\Product" required class="form-control w-auto" />
+                        </td>
+                        <td>
+                            <InputText @bind-Value="resource.ValueName" placeholder="CheckBoxValueName" required class="form-control w-auto" />
+                        </td>
+                        <td>
+                            <InputText @bind-Value="resource.SupportedOn" class="form-control w-auto" />
+                        </td>
+                        <td>
+                            <InputTextArea @bind-Value="resource.Properties" class="form-control w-auto" style="width: 80%;" />
+                        </td>
+                        <td>
+                            <button @onclick="() => resources.Remove(resource)" class="btn btn-danger" type="button">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="btn-group mt-4" role="group">
+        <label class="btn btn-primary">Upload .reg
+            <InputFile accept=".reg" class="form-control required d-none" title="test" OnChange="HandleFileSelected" style="visibility:hidden;min-width: auto" />
+        </label>
+        <button @onclick="AddNewResource" class="btn btn-secondary" type="button">Add resource</button>
+        <button type="submit" class="btn btn-success">Generate ADMX</button>
+    </div>
+</EditForm>
+
+<table class="table mt-5">
+    <thead>
+        <tr>
+            <th>Policy type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>checkBox</td>
+            <td>presents a checkbox where checked sets a DWORD to 1 and unchecked sets the DWORD to 0</td>
+        </tr>
+        <tr>
+            <td>decimal</td>
+            <td>presents a decimal entry box, optionally specify min, max, and default values in properties like <code>MinValue=0;MaxValue=10;Default=5</code></td>
+        </tr>
+        <tr>
+            <td>enabled</td>
+            <td>when enabled, creates the value, when disabled, removes the value</td>
+        </tr>
+        <tr>
+            <td>enum</td>
+            <td>presents a drop down list with values as specified in properties like <code>Type=Decimal;Values=Option A:0\|Option B:1</code></td>
+        </tr>
+        <tr>
+            <td>textBox</td>
+            <td>presents a simple text entry that sets a string value</td>
+        </tr>
+        <tr>
+            <td>boolean</td>
+            <td>presents a drop down list with values Disabled and Enabled that set a DWORD to 0 and 1 respectively</td>
+        </tr>
+    </tbody>
+</table>
+
+@if (!string.IsNullOrEmpty(Error))
+{
+    <div class="alert alert-danger" role="alert">
+        @Error
+    </div>
+}
+
+<script>
+    function downloadFiles(admxUrl, admlUrl, filePrefix) {
+        const admxLink = document.createElement('a');
+        admxLink.href = admxUrl;
+        admxLink.download = filePrefix+'.admx';
+        admxLink.click();
+
+        const admlLink = document.createElement('a');
+        admlLink.href = admlUrl;
+        admlLink.download = filePrefix+'.adml';
+        admlLink.click();
+    }
+</script>
+
+@code {
+    [SupplyParameterFromForm]
+    private AdmxSettings admxSettings { get; set; }
+    protected override void OnInitialized() => admxSettings ??= new AdmxSettings
+        {
+            DisplayName = "",
+            Description = "",
+            Revision = "",
+            MinRequiredRevision = "",
+            SchemaVersion = "8.8",
+            TargetNamespace = new TargetNamespace
+            {
+                Prefix = "",
+                Namespace = ""
+            },
+            FallbackCulture = "en-US",
+            SupersededPolicyFiles = ""
+        };
+
+    private List<Resource> resources = new List<Resource>() {
+        new Resource
+        {
+            Category = "",
+            DisplayName = "",
+            Class = "Machine",
+            Type = "checkBox",
+            Explanation = "",
+            RegistryKey = "",
+            ValueName = "",
+            SupportedOn = "",
+            Properties = ""
+        }
+    };
+    private string? AdmxDownloadUrl { get; set; }
+    private string? AdmlDownloadUrl { get; set; }
+    private string? Error { get; set; }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file != null)
+        {
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            ParseRegFile(content, file.Name);
+        }
+    }
+
+    private void ParseRegFile(string content, string name)
+    {
+        var lines = content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        string currentKey = null;
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("[") && line.EndsWith("]"))
+            {
+                currentKey = line.Trim('[', ']');
+            }
+            else if (line.Contains("=") && currentKey != null)
+            {
+                var parts = line.Split(new[] { '=' }, 2);
+                var valueName = parts[0].Trim('"');
+                var value = parts[1].Trim('"');
+                var type = int.TryParse(value.Replace("dword:", ""), out var intValue) ? (intValue == 0 || intValue == 1 ? "checkBox" : "decimal") : "textBox";
+
+                var resource = new Resource
+                {
+                    RegistryKey = currentKey.Replace("HKEY_LOCAL_MACHINE\\", "").Replace("HKEY_CURRENT_USER\\", ""),
+                    ValueName = valueName,
+                    DisplayName = valueName,
+                    Explanation = "Imported from " + name,
+                    Class = currentKey.Contains("HKEY_LOCAL_MACHINE") ? "Machine" : "User",
+                    Type = type,
+                    SupportedOn = "",
+                    Properties = ""
+                };
+
+                // Add the resource to your collection
+                resources.Add(resource);
+            }
+        }
+    }
+
+    private async void Submit()
+    {
+        Error = null;
+        var csvBuilder = new StringBuilder();
+        csvBuilder.AppendLine("CategoryId,Category,Id,Display Name,Class,Type,Explanation,Registry Key,Value Name,SupportedOnId,Supported On,Properties");
+
+        foreach (var resource in resources) {
+            var categoryId = Regex.Replace(resource.Category, @"[^\w]", "");
+            var id = Regex.Replace(resource.DisplayName, @"[^\w]", "");
+            var supportedOnId = Regex.Replace(resource.SupportedOn, @"[^\w]", "");
+            csvBuilder.AppendLine($"{categoryId},{resource.Category},{id},{resource.DisplayName},{resource.Class},{resource.Type},{resource.Explanation},{resource.RegistryKey},{resource.ValueName},{supportedOnId},{resource.SupportedOn},{resource.Properties}");
+        }
+
+        admxSettings.File = csvBuilder.ToString();
+
+        var res = admxgen.Program.GenerateAdmx(admxSettings);
+        if (res.Length != 2)
+        {
+            Error = res[0];
+            return;
+        }
+
+        var admxBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[0]));
+        var admlBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[1]));
+        AdmxDownloadUrl = $"data:application/xml;base64,{admxBase64}";
+        AdmlDownloadUrl = $"data:application/xml;base64,{admlBase64}";
+
+        await JSRuntime.InvokeVoidAsync("downloadFiles", AdmxDownloadUrl, AdmlDownloadUrl, admxSettings.DisplayName);
+    }
+
+    private void AddNewResource()
+    {
+        var lastResource = resources.LastOrDefault();
+        if (lastResource != null)
+        {
+            var newResource = new Resource
+                {
+                    Category = lastResource.Category,
+                    DisplayName = lastResource.DisplayName,
+                    Class = lastResource.Class,
+                    Type = lastResource.Type,
+                    Explanation = lastResource.Explanation,
+                    RegistryKey = lastResource.RegistryKey,
+                    ValueName = lastResource.ValueName,
+                    SupportedOn = lastResource.SupportedOn,
+                    Properties = lastResource.Properties
+                };
+            resources.Add(newResource);
+        }
+        else
+        {
+            resources.Add(new Resource());
+        }
+    }
+
+    public class Resource
+    {
+        public string? Category { get; set; }
+        public string? DisplayName { get; set; }
+        public string? Class { get; set; }
+        public string? Type { get; set; }
+        public string? Explanation { get; set; }
+        public string? RegistryKey { get; set; }
+        public string? ValueName { get; set; }
+        public string? SupportedOnId { get; set; }
+        public string? SupportedOn { get; set; }
+        public string? Properties { get; set; }
+    }
+}
