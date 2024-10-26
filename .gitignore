@@ -240,6 +240,3 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-
-# Generated XSD Schema Classes
-admxgen/PolicyDefinitionFiles.cs
