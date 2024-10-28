@@ -5,6 +5,7 @@ using admxgen;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
+using System.IO.Compression;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -37,7 +38,31 @@ namespace admxgen
 
   class Program
   {
-    public static string[] GenerateAdmx(AdmxSettings admxSettings)
+    public static byte[] CreateZipFile(string admxContent, string admlContent, string filePrefix)
+    {
+      using (var memoryStream = new MemoryStream())
+      {
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+        {
+          var admxEntry = archive.CreateEntry($"{filePrefix}.admx");
+          using (var admxStream = admxEntry.Open())
+          using (var admxWriter = new StreamWriter(admxStream))
+          {
+            admxWriter.Write(admxContent);
+          }
+
+          var admlEntry = archive.CreateEntry($"{filePrefix}.adml");
+          using (var admlStream = admlEntry.Open())
+          using (var admlWriter = new StreamWriter(admlStream))
+          {
+            admlWriter.Write(admlContent);
+          }
+        }
+        return memoryStream.ToArray();
+      }
+    }
+
+    public static byte[] GenerateAdmx(AdmxSettings admxSettings)
     {
       try
       {
@@ -84,12 +109,12 @@ namespace admxgen
           ser.Serialize(w, parser.Resources);
         }
 
-        return [admxOutput.ToString(), admlOutput.ToString()];
+        return CreateZipFile(admxOutput.ToString(), admlOutput.ToString(), admxSettings.TargetNamespace.Namespace);
       }
       catch (Exception e)
       {
         Console.WriteLine(e.ToString());
-        return [e.ToString()];
+        return Encoding.UTF8.GetBytes(e.ToString());
       }
     }
   }

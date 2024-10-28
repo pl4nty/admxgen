@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Forms
 @using System.Text
 @using System.Text.RegularExpressions
 @using admxgen
@@ -171,16 +171,11 @@
 }
 
 <script>
-    function downloadFiles(admxUrl, admlUrl, filePrefix) {
-        const admxLink = document.createElement('a');
-        admxLink.href = admxUrl;
-        admxLink.download = filePrefix+'.admx';
-        admxLink.click();
-
-        const admlLink = document.createElement('a');
-        admlLink.href = admlUrl;
-        admlLink.download = filePrefix+'.adml';
-        admlLink.click();
+    function downloadFiles(zipUrl, filePrefix) {
+        const zipLink = document.createElement('a');
+        zipLink.href = zipUrl;
+        zipLink.download = filePrefix + '.zip';
+        zipLink.click();
     }
 </script>
 
@@ -217,8 +212,7 @@
             Properties = ""
         }
     };
-    private string? AdmxDownloadUrl { get; set; }
-    private string? AdmlDownloadUrl { get; set; }
+    private string? ZipDownloadUrl { get; set; }
     private string? Error { get; set; }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
@@ -284,18 +278,16 @@
         admxSettings.File = csvBuilder.ToString();
 
         var res = admxgen.Program.GenerateAdmx(admxSettings);
-        if (res.Length != 2)
+        if (res.Length == 0)
         {
-            Error = res[0];
+            Error = "Error generating ADMX file.";
             return;
         }
 
-        var admxBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[0]));
-        var admlBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(res[1]));
-        AdmxDownloadUrl = $"data:application/xml;base64,{admxBase64}";
-        AdmlDownloadUrl = $"data:application/xml;base64,{admlBase64}";
+        var zipBase64 = Convert.ToBase64String(res);
+        ZipDownloadUrl = $"data:application/zip;base64,{zipBase64}";
 
-        await JSRuntime.InvokeVoidAsync("downloadFiles", AdmxDownloadUrl, AdmlDownloadUrl, admxSettings.DisplayName);
+        await JSRuntime.InvokeVoidAsync("downloadFiles", ZipDownloadUrl, admxSettings.TargetNamespace.Namespace);
     }
 
     private void AddNewResource()
