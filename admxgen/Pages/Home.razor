@@ -7,7 +7,12 @@
 @page "/"
 
 <PageTitle>ADMX Generator</PageTitle>
-<h1 class="mb-4" style="color: var(--bs-emphasis-color)">ADMX Generator</h1>
+<h1 class="mb-2" style="color: var(--bs-emphasis-color)">ADMX Generator</h1>
+<div class="mb-4">
+    Create ADMX and ADML files for any registry keys, ready to use with Intune or Group Policy.
+    Import from Registry Editor exports (.reg files) is also supported.
+    Want to know more about a field? Hover over it to see a description.
+</div>
 
 <EditForm Model="@admxSettings" OnValidSubmit="@Submit">
     <DataAnnotationsValidator />
@@ -22,35 +27,35 @@
         </div>
     </div>
     <div class="form-group row mt-4">
-        <div class="col-md-1">
+        <div class="col-md-1" title="Method of tracking changes made to the .admx or .adml file.">
             <label for="revision" class="form-label">Revision</label>
-            <InputText id="revision" @bind-Value="admxSettings.Revision" placeholder="1.1" required pattern="\d+\.\d+" class="form-control" title="Method of tracking changes made to the .admx or .adml file." />
+            <InputText id="revision" @bind-Value="admxSettings.Revision" placeholder="1.1" required pattern="\d+\.\d+" class="form-control" />
         </div>
-        <div class="col-md-1">
+        <div class="col-md-1" title="Minimum version of the .adml file that will interoperate with the .admx file.">
             <label for="minRequiredRevision" class="form-label">Min Revision</label>
-            <InputText id="minRequiredRevision" @bind-Value="admxSettings.MinRequiredRevision" placeholder="1.0" required pattern="\d+\.\d+" class="form-control" title="Minimum version of the .adml file that will interoperate with the .admx file." />
+            <InputText id="minRequiredRevision" @bind-Value="admxSettings.MinRequiredRevision" placeholder="1.0" required pattern="\d+\.\d+" class="form-control" />
         </div>
-        <div class="col-md-1">
+        <div class="col-md-1" title="ADMX schema version that the .admx and .adml files conform to.">
             <label for="schemaVersion" class="form-label"><a target="_blank" href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/find-active-directory-schema?tabs=gui#mapping-the-objectversion-attribute">Schema</a></label>
-            <InputText id="schemaVersion" @bind-Value="admxSettings.SchemaVersion" placeholder="8.8" required pattern="\d+\.\d+" class="form-control" title="ADMX schema version that the .admx and .adml files conform to." />
+            <InputText id="schemaVersion" @bind-Value="admxSettings.SchemaVersion" placeholder="8.8" required pattern="\d+\.\d+" class="form-control" />
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2" title="Logical name that refers to the namespace within the current or referenced ADMX file.">
             <label for="targetNamespacePrefix" class="form-label">Namespace Prefix</label>
-            <InputText id="targetNamespacePrefix" @bind-Value="admxSettings.TargetNamespace.Prefix" placeholder="NamespacePrefix" required class="form-control" title="Logical name that refers to the namespace within the current or referenced ADMX file." />
+            <InputText id="targetNamespacePrefix" @bind-Value="admxSettings.TargetNamespace.Prefix" placeholder="NamespacePrefix" required class="form-control" />
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2" title="URI used to identify the elements within an ADMX file. Must be unique from all other ADMX files.">
             <label for="targetNamespace" class="form-label">Namespace</label>
-            <InputText id="targetNamespace" @bind-Value="admxSettings.TargetNamespace.Namespace" placeholder="NamespacePrefix.Policies" required class="form-control" title="URI used to identify the elements within an ADMX file. Must be unique from all other ADMX files." />
+            <InputText id="targetNamespace" @bind-Value="admxSettings.TargetNamespace.Namespace" placeholder="NamespacePrefix.Policies" required class="form-control" />
         </div>
-        <div class="col-md-2">
+        <div class="col-md-2" title="IETF BCP 47 language tag for human-readable fields like display name and description.">
             <label for="fallbackCulture" class="form-label">Culture</label>
             <InputText id="fallbackCulture" @bind-Value="admxSettings.FallbackCulture" required pattern="[a-z]{2}-[A-Z]{2}" placeholder="en-US" class="form-control" />
         </div>
     </div>
     <div class="form-group row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-4" title="ADM file name(s) to be replaced by the ADMX file. Group Policy Object Editor will not read any ADM file designated as superseded.">
             <label for="supersededPolicyFiles" class="form-label">Superseded Policies</label>
-            <InputText id="supersededPolicyFiles" @bind-Value="admxSettings.SupersededPolicyFiles" placeholder="superseded1.adm,superseded2.adm" class="form-control" title="ADM file name(s) to be replaced by the ADMX file. Group Policy Object Editor will not read any ADM file designated as superseded." />
+            <InputText id="supersededPolicyFiles" @bind-Value="admxSettings.SupersededPolicyFiles" placeholder="superseded1.adm,superseded2.adm" class="form-control" />
         </div>
     </div>
     <div class="table-responsive mt-4">
@@ -163,10 +168,19 @@
     </tbody>
 </table>
 
+Icon by Jules Demoulin, <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons
+
 @if (!string.IsNullOrEmpty(Error))
 {
     <div class="alert alert-danger" role="alert">
         @Error
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Warning))
+{
+    <div class="alert alert-warning" role="alert">
+        @Warning
     </div>
 }
 
@@ -208,12 +222,13 @@
             Explanation = "",
             RegistryKey = "",
             ValueName = "",
-            SupportedOn = "",
+            SupportedOn = "windows:SUPPORTED_Windows7",
             Properties = ""
         }
     };
     private string? ZipDownloadUrl { get; set; }
     private string? Error { get; set; }
+    private string? Warning { get; set; }
 
     private async Task HandleFileSelected(InputFileChangeEventArgs e)
     {
@@ -252,7 +267,7 @@
                     Explanation = "Imported from " + name,
                     Class = currentKey.Contains("HKEY_LOCAL_MACHINE") ? "Machine" : "User",
                     Type = type,
-                    SupportedOn = "",
+                    SupportedOn = "windows:SUPPORTED_Windows7",
                     Properties = ""
                 };
 
@@ -265,6 +280,7 @@
     private async void Submit()
     {
         Error = null;
+        Warning = null;
         var csvBuilder = new StringBuilder();
         csvBuilder.AppendLine("CategoryId,Category,Id,Display Name,Class,Type,Explanation,Registry Key,Value Name,SupportedOnId,Supported On,Properties");
 
@@ -276,6 +292,56 @@
         }
 
         admxSettings.File = csvBuilder.ToString();
+
+        // Validation for culture
+        if (admxSettings.FallbackCulture != "en-US")
+        {
+            Warning = "Warning: Cultures other than en-US are not supported in Intune.";
+        }
+
+        // Validation for combo box type (not supported yet)
+        if (resources.Any(r => r.Type == "comboBox"))
+        {
+            Warning = "Warning: Resources using the combo box type are not supported in Intune.";
+        }
+
+        // Validation for registry key requirements
+        var invalidRegistryKeys = new List<string>
+        {
+            "System",
+            "Software\\Microsoft",
+            "Software\\Policies\\Microsoft"
+        };
+
+        var validRegistryKeys = new List<string>
+        {
+            "Software\\Policies\\Microsoft\\Office",
+            "Software\\Microsoft\\Office",
+            "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer",
+            "Software\\Microsoft\\Internet Explorer",
+            "software\\policies\\microsoft\\shared tools\\proofing tools",
+            "software\\policies\\microsoft\\imejp",
+            "software\\policies\\microsoft\\ime\\shared",
+            "software\\policies\\microsoft\\shared tools\\graphics filters",
+            "software\\policies\\microsoft\\windows\\currentversion\\explorer",
+            "software\\policies\\microsoft\\softwareprotectionplatform",
+            "software\\policies\\microsoft\\officesoftwareprotectionplatform",
+            "software\\policies\\microsoft\\windows\\windows search\\preferences",
+            "software\\policies\\microsoft\\exchange",
+            "software\\microsoft\\shared tools\\proofing tools",
+            "software\\microsoft\\shared tools\\graphics filters",
+            "software\\microsoft\\windows\\windows search\\preferences",
+            "software\\microsoft\\exchange",
+            "software\\policies\\microsoft\\vba\\security",
+            "software\\microsoft\\onedrive",
+            "software\\Microsoft\\Edge",
+            "Software\\Microsoft\\EdgeUpdate"
+        };
+
+        if (resources.Any(r => invalidRegistryKeys.Any(key => r.RegistryKey.StartsWith(key)) && !validRegistryKeys.Any(key => r.RegistryKey.StartsWith(key))))
+        {
+            Warning = "Warning: One or more registry keys are not supported in Intune.";
+        }
 
         var res = admxgen.Program.GenerateAdmx(admxSettings);
         if (res.Length == 0)
