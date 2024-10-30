@@ -36,8 +36,8 @@
             <InputText id="minRequiredRevision" @bind-Value="admxSettings.MinRequiredRevision" placeholder="1.0" required pattern="\d+\.\d+" class="form-control" />
         </div>
         <div class="col-md-1" title="ADMX schema version that the .admx and .adml files conform to.">
-            <label for="schemaVersion" class="form-label"><a target="_blank" href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/deploy/find-active-directory-schema?tabs=gui#mapping-the-objectversion-attribute">Schema</a></label>
-            <InputText id="schemaVersion" @bind-Value="admxSettings.SchemaVersion" placeholder="8.8" required pattern="\d+\.\d+" class="form-control" />
+            <label for="schemaVersion" class="form-label">Schema</label>
+            <InputText id="schemaVersion" @bind-Value="admxSettings.SchemaVersion" placeholder="1.0" required pattern="\d+\.\d+" class="form-control" />
         </div>
         <div class="col-md-2" title="Logical name that refers to the namespace within the current or referenced ADMX file.">
             <label for="targetNamespacePrefix" class="form-label">Namespace Prefix</label>
@@ -202,7 +202,7 @@ Icon by Jules Demoulin, <a target="_blank" href="https://creativecommons.org/lic
             Description = "",
             Revision = "1.0",
             MinRequiredRevision = "1.0",
-            SchemaVersion = "8.8",
+            SchemaVersion = "1.0",
             TargetNamespace = new TargetNamespace
             {
                 Prefix = "",
