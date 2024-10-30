@@ -342,18 +342,20 @@ Icon by Jules Demoulin, <a target="_blank" href="https://creativecommons.org/lic
         {
             Warning = "Warning: One or more registry keys are not supported in Intune.";
         }
-
-        var res = admxgen.Program.GenerateAdmx(admxSettings);
-        if (res.Length == 0)
+        
+        try
         {
-            Error = "Error generating ADMX file.";
-            return;
+            var res = admxgen.Program.GenerateAdmx(admxSettings);
+            var zipBase64 = Convert.ToBase64String(res);
+            ZipDownloadUrl = $"data:application/zip;base64,{zipBase64}";
+
+            await JSRuntime.InvokeVoidAsync("downloadFiles", ZipDownloadUrl, admxSettings.TargetNamespace.Namespace);
         }
-
-        var zipBase64 = Convert.ToBase64String(res);
-        ZipDownloadUrl = $"data:application/zip;base64,{zipBase64}";
-
-        await JSRuntime.InvokeVoidAsync("downloadFiles", ZipDownloadUrl, admxSettings.TargetNamespace.Namespace);
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+            Error = Encoding.UTF8.GetBytes(e.ToString());
+        }
     }
 
     private void AddNewResource()

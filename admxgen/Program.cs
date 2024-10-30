@@ -64,8 +64,6 @@ namespace admxgen
 
     public static byte[] GenerateAdmx(AdmxSettings admxSettings)
     {
-      try
-      {
         var parser = new InputParser(new StringReader(admxSettings.File));
         parser.Parse();
 
@@ -110,12 +108,6 @@ namespace admxgen
         }
 
         return CreateZipFile(admxOutput.ToString(), admlOutput.ToString(), admxSettings.TargetNamespace.Namespace);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e.ToString());
-        return Encoding.UTF8.GetBytes(e.ToString());
-      }
     }
   }
 }
