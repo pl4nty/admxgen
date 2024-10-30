@@ -38,30 +38,6 @@ namespace admxgen
 
   class Program
   {
-    public static byte[] CreateZipFile(string admxContent, string admlContent, string filePrefix)
-    {
-      using (var memoryStream = new MemoryStream())
-      {
-        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
-        {
-          var admxEntry = archive.CreateEntry($"{filePrefix}.admx");
-          using (var admxStream = admxEntry.Open())
-          using (var admxWriter = new StreamWriter(admxStream))
-          {
-            admxWriter.Write(admxContent);
-          }
-
-          var admlEntry = archive.CreateEntry($"{filePrefix}.adml");
-          using (var admlStream = admlEntry.Open())
-          using (var admlWriter = new StreamWriter(admlStream))
-          {
-            admlWriter.Write(admlContent);
-          }
-        }
-        return memoryStream.ToArray();
-      }
-    }
-
     public static byte[] GenerateAdmx(AdmxSettings admxSettings)
     {
         var parser = new InputParser(new StringReader(admxSettings.File));
@@ -93,21 +69,28 @@ namespace admxgen
           Encoding = Encoding.UTF8
         };
 
-        var admxOutput = new StringBuilder();
-        using (var w = XmlWriter.Create(admxOutput, xmlWriterSettings))
+        using (var memoryStream = new MemoryStream())
         {
-          var ser = new XmlSerializer(parser.Definitions.GetType(), "http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions");
-          ser.Serialize(w, parser.Definitions);
-        }
+          using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+          {
+            var filePrefix = admxSettings.TargetNamespace.Namespace;
 
-        var admlOutput = new StringBuilder();
-        using (var w = XmlWriter.Create(admlOutput, xmlWriterSettings))
-        {
-          var ser = new XmlSerializer(parser.Resources.GetType(), "http://www.microsoft.com/GroupPolicy/PolicyDefinitions");
-          ser.Serialize(w, parser.Resources);
-        }
+            using (var admxStream = archive.CreateEntry($"{filePrefix}.admx").Open())
+            using (var w = XmlWriter.Create(new StreamWriter(admxStream), xmlWriterSettings))
+            {
+              var ser = new XmlSerializer(parser.Definitions.GetType(), "http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions");
+              ser.Serialize(w, parser.Definitions);
+            }
 
-        return CreateZipFile(admxOutput.ToString(), admlOutput.ToString(), admxSettings.TargetNamespace.Namespace);
+            using (var admlStream = archive.CreateEntry($"{filePrefix}.adml").Open())
+            using (var w = XmlWriter.Create(new StreamWriter(admlStream), xmlWriterSettings))
+            {
+              var ser = new XmlSerializer(parser.Resources.GetType(), "http://www.microsoft.com/GroupPolicy/PolicyDefinitions");
+              ser.Serialize(w, parser.Resources);
+            }
+          }
+          return memoryStream.ToArray();
+        }
     }
   }
 }
