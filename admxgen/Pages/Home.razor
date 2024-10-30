@@ -354,7 +354,7 @@ Icon by Jules Demoulin, <a target="_blank" href="https://creativecommons.org/lic
         catch (Exception e)
         {
             Console.WriteLine(e.ToString());
-            Error = Encoding.UTF8.GetBytes(e.ToString());
+            Error = e.ToString();
         }
     }
 
