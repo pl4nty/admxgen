@@ -1,4 +1,4 @@
-﻿using LumenWorks.Framework.IO.Csv;
+﻿using CsvReader;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -137,7 +137,7 @@ namespace admxgen
 
         public void Parse()
         {
-            using (var csvReader = new CsvReader(_reader, true))
+            using (var csvReader = new CsvReader.CsvReader(_reader, true))
             {
                 var csvHeaders = csvReader.GetFieldHeaders();
                 while (csvReader.ReadNextRecord())
@@ -184,7 +184,7 @@ namespace admxgen
             return lastCategoryId;
         }
 
-        private void ParseLine(CsvReader csvReader)
+        private void ParseLine(CsvReader.CsvReader csvReader)
         {
             var categoryId = csvReader["CategoryId"];
             var category = csvReader["Category"];
@@ -192,7 +192,7 @@ namespace admxgen
             var displayName = csvReader["Display Name"];
             var @class = csvReader["Class"];
             var type = csvReader["Type"];
-            var explanation = csvReader["Explanation"];
+            var explanation = System.Web.HttpUtility.UrlDecode(csvReader["Explanation"]);
             var registryKey = csvReader["Registry Key"];
             var valueName = csvReader["Value Name"];
             var supportedOnId = csvReader["SupportedOnId"];

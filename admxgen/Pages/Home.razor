@@ -286,10 +286,22 @@ Icon by Jules Demoulin, <a target="_blank" href="https://creativecommons.org/lic
         csvBuilder.AppendLine("CategoryId,Category,Id,Display Name,Class,Type,Explanation,Registry Key,Value Name,SupportedOnId,Supported On,Properties");
 
         foreach (var resource in resources) {
-            var categoryId = Regex.Replace(resource.Category, @"[^\w]", "");
-            var id = Regex.Replace(resource.DisplayName, @"[^\w]", "");
-            var supportedOnId = Regex.Replace(resource.SupportedOn, @"[^\w]", "");
-            csvBuilder.AppendLine($"{categoryId},{resource.Category},{id},{resource.DisplayName},{resource.Class},{resource.Type},{resource.Explanation},{resource.RegistryKey},{resource.ValueName},{supportedOnId},{resource.SupportedOn},{resource.Properties}");
+            var row = new[] {
+                Regex.Replace(resource.Category, @"[^\w]", ""),
+                resource.Category,
+                Regex.Replace(resource.DisplayName, @"[^\w]", ""),
+                resource.DisplayName,
+                resource.Class,
+                resource.Type,
+                System.Web.HttpUtility.UrlEncode(resource.Explanation),
+                resource.RegistryKey,
+                resource.ValueName,
+                Regex.Replace(resource.SupportedOn, @"[^\w]", ""),
+                resource.SupportedOn,
+                resource.Properties
+            };
+            
+            csvBuilder.AppendLine(string.Join(",", row));
         }
 
         admxSettings.File = csvBuilder.ToString();
