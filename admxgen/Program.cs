@@ -76,17 +76,29 @@ namespace admxgen
             var filePrefix = admxSettings.TargetNamespace.Namespace;
 
             using (var admxStream = archive.CreateEntry($"{filePrefix}.admx").Open())
-            using (var w = XmlWriter.Create(new StreamWriter(admxStream), xmlWriterSettings))
+            using (var streamWriter = new StreamWriter(admxStream))
+            using (var w = XmlWriter.Create(streamWriter, xmlWriterSettings))
             {
               var ser = new XmlSerializer(parser.Definitions.GetType(), "http://schemas.microsoft.com/GroupPolicy/2006/07/PolicyDefinitions");
-              ser.Serialize(w, parser.Definitions);
+              using (var stringWriter = new StringWriter())
+              {
+                ser.Serialize(stringWriter, parser.Definitions);
+                var admxContent = stringWriter.ToString().Replace("<policyNamespaces>", $"<!-- created with https://admxgen.tplant.com.au -->\n  <policyNamespaces>");
+                streamWriter.Write(admxContent);
+              }
             }
 
             using (var admlStream = archive.CreateEntry($"{filePrefix}.adml").Open())
-            using (var w = XmlWriter.Create(new StreamWriter(admlStream), xmlWriterSettings))
+            using (var streamWriter = new StreamWriter(admlStream))
+            using (var w = XmlWriter.Create(streamWriter, xmlWriterSettings))
             {
               var ser = new XmlSerializer(parser.Resources.GetType(), "http://www.microsoft.com/GroupPolicy/PolicyDefinitions");
-              ser.Serialize(w, parser.Resources);
+              using (var stringWriter = new StringWriter())
+              {
+                ser.Serialize(stringWriter, parser.Resources);
+                var admlContent = stringWriter.ToString().Replace("<displayName>", $"<!-- created with https://admxgen.tplant.com.au -->\n  <displayName>");
+                streamWriter.Write(admlContent);
+              }
             }
           }
           return memoryStream.ToArray();
